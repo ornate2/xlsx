@@ -15,13 +15,10 @@
                 </headerToolbar>
                 <columns>
                     <Column >
-                        <Text text="id"/>
+                        <Text text="ID"/>
                     </Column>
                      <Column >
                         <Text text="Name"/>
-                    </Column>
-                     <Column >
-                        <Text text="Date"/>
                     </Column>
                      <Column >
                         <Text text="Attendance"/>
@@ -30,16 +27,14 @@
                 <items>
                     <ColumnListItem >
                         <cells>
-                            <Text text="{/id}" />
+                            <Text text="{ID}" />
                         </cells>
                         <cells>
-                            <Text text="{/employeeName}" />
+                            <Text text="{employeeName}" />
                         </cells>
-                         <!-- <cells>
-                            <Text text="{/date}" />
-                        </cells> -->
+                        
                          <cells>
-                            <Text text="{/attendanceStatus}" />
+                            <Text text="{attendanceStatus}" />
                         </cells>
                     </ColumnListItem>
                 </items>
