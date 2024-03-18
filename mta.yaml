@@ -1,0 +1,139 @@
+_schema-version: "3.1"
+ID: XLSX
+description: A simple CAP project.
+version: 1.0.0
+modules:
+  - name: XLSX-srv
+    type: nodejs
+    path: gen/srv
+    requires:
+      - name: XLSX-db
+      - name: uaa_XLSX
+    provides:
+      - name: srv-api
+        properties:
+          srv-url: ${default-url}
+    parameters:
+      buildpack: nodejs_buildpack
+    build-parameters:
+      builder: npm
+  - name: XLSX-db-deployer
+    type: hdb
+    path: gen/db
+    requires:
+      - name: XLSX-db
+    parameters:
+      buildpack: nodejs_buildpack
+  - name: XLSX-destination-content
+    type: com.sap.application.content
+    requires:
+      - name: XLSX-destination-service
+        parameters:
+          content-target: true
+      - name: XLSX_html_repo_host
+        parameters:
+          service-key:
+            name: XLSX_html_repo_host-key
+      - name: uaa_XLSX
+        parameters:
+          service-key:
+            name: uaa_XLSX-key
+    parameters:
+      content:
+        instance:
+          destinations:
+            - Name: xlsx_download_XLSX_html_repo_host
+              ServiceInstanceName: XLSX-html5-app-host-service
+              ServiceKeyName: XLSX_html_repo_host-key
+              sap.cloud.service: xlsx_download
+            - Authentication: OAuth2UserTokenExchange
+              Name: xlsx_download_uaa_XLSX
+              ServiceInstanceName: XLSX-xsuaa-service
+              ServiceKeyName: uaa_XLSX-key
+              sap.cloud.service: xlsx_download
+          existing_destinations_policy: ignore
+    build-parameters:
+      no-source: true
+  - name: XLSX-app-content
+    type: com.sap.application.content
+    path: .
+    requires:
+      - name: XLSX_html_repo_host
+        parameters:
+          content-target: true
+    build-parameters:
+      build-result: resources
+      requires:
+        - artifacts:
+            - xlsx.zip
+          name: xlsx
+          target-path: resources/
+  - name: xlsx
+    type: html5
+    path: app/xlsx
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install
+        - npm run build:cf
+      supported-platforms:
+        []
+resources:
+  - name: XLSX-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+  - name: XLSX-destination-service
+    type: org.cloudfoundry.managed-service
+    parameters:
+      config:
+        HTML5Runtime_enabled: true
+        init_data:
+          instance:
+            destinations:
+              - Authentication: NoAuthentication
+                Name: ui5
+                ProxyType: Internet
+                Type: HTTP
+                URL: https://ui5.sap.com
+              - Authentication: NoAuthentication
+                HTML5.DynamicDestination: true
+                HTML5.ForwardAuthToken: true
+                Name: XLSX-srv-api
+                ProxyType: Internet
+                Type: HTTP
+                URL: ~{srv-api/srv-url}
+            existing_destinations_policy: update
+        version: 1.0.0
+      service: destination
+      service-name: XLSX-destination-service
+      service-plan: lite
+    requires:
+      - name: srv-api
+  - name: XLSX_html_repo_host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-name: XLSX-html5-app-host-service
+      service-plan: app-host
+  - name: uaa_XLSX
+    type: org.cloudfoundry.managed-service
+    parameters:
+      path: ./xs-security.json
+      service: xsuaa
+      service-name: XLSX-xsuaa-service
+      service-plan: application
+      config:
+        xsappname: XLSX-${org}-${space}
+        tenant-mode: dedicated
+parameters:
+  deploy_mode: html5-repo
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm ci
+        - npx cds build --production

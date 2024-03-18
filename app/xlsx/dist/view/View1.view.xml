@@ -1,0 +1,51 @@
+<mvc:View controllerName="xlsx.controller.View1"
+    xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
+    xmlns="sap.m">
+    <Page id="page" title="{i18n>title}">
+         <content>
+            <Table items="{/ExcelData}" id="excel" mode="MultiSelect">
+                <headerToolbar>
+                    <OverflowToolbar >
+                        <content>
+                            <Title text="Excel data"/>
+                            <ToolbarSpacer />
+                            <Button text="DownLoad Excel" press="onDownload"/>
+                        </content>
+                    </OverflowToolbar>
+                </headerToolbar>
+                <columns>
+                    <Column >
+                        <Text text="id"/>
+                    </Column>
+                     <Column >
+                        <Text text="Name"/>
+                    </Column>
+                     <Column >
+                        <Text text="Date"/>
+                    </Column>
+                     <Column >
+                        <Text text="Attendance"/>
+                    </Column>
+                </columns>
+                <items>
+                    <ColumnListItem >
+                        <cells>
+                            <Text text="{/id}" />
+                        </cells>
+                        <cells>
+                            <Text text="{/employeeName}" />
+                        </cells>
+                         <!-- <cells>
+                            <Text text="{/date}" />
+                        </cells> -->
+                         <cells>
+                            <Text text="{/attendanceStatus}" />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+
+            
+        </content>
+    </Page>
+</mvc:View>
